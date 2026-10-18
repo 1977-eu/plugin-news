@@ -41,6 +41,9 @@ Panel {
   property int cursorIndex: 0
   readonly property bool deadList: !items || items.length === 0
   readonly property var cursorItem: deadList ? null : items[cursorIndex]
+  // Display rows: one header per project group followed by its items. The
+  // cursor keeps addressing item indices, so headers are display-only.
+  readonly property var rows: deadList ? [] : NewsModel.groupedRows(items)
 
   readonly property var sourceLabels: ({
     omarchy: "OM", opencode: "OC", hermes: "HE", marketplace: "MP", site: "NW",
@@ -221,20 +224,54 @@ Panel {
           spacing: Style.space(2)
 
           Repeater {
-            model: root.items
+            model: root.rows
 
             delegate: Item {
               id: row
               required property var modelData
               required property int index
-              readonly property bool isCurrent: root.cursorIndex === index
+              readonly property bool isHeader: modelData.kind === "header"
+              readonly property int itemIndex: isHeader ? -1 : modelData.itemIndex
+              readonly property var story: isHeader ? null : modelData.item
+              readonly property bool isCurrent: !isHeader && root.cursorIndex === itemIndex
               readonly property bool isRead:
-                !!(root.svc && root.svc.readModel && root.svc.readModel[String(modelData.id)])
+                !isHeader && !!(root.svc && root.svc.readModel
+                  && root.svc.readModel[String(modelData.item.id)])
 
               width: parent ? parent.width : 0
-              height: Style.space(32)
+              height: isHeader ? Style.space(22) : Style.space(32)
 
+              // ---- group header row
+              Text {
+                id: groupLabel
+                visible: row.isHeader
+                textFormat: Text.PlainText
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                text: (String(modelData.label || "?").toUpperCase()
+                       + " · " + modelData.count)
+                color: root.dim
+                font.family: bar ? bar.fontFamily : Style.font.family
+                font.pixelSize: Style.font.caption
+                font.letterSpacing: 1
+              }
+
+              Rectangle {
+                visible: row.isHeader
+                anchors.left: groupLabel.right
+                anchors.leftMargin: Style.space(8)
+                anchors.right: parent.right
+                anchors.rightMargin: Style.space(2)
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: Style.space(7)
+                height: 1
+                color: root.dim
+                opacity: 0.35
+              }
+
+              // ---- story row (headers stop here)
               CursorSurface {
+                visible: !row.isHeader
                 anchors.fill: parent
                 foreground: root.foreground
                 current: row.isCurrent
@@ -242,7 +279,7 @@ Panel {
 
               Rectangle {
                 // Unread dot.
-                visible: !row.isRead
+                visible: !row.isHeader && !row.isRead
                 anchors.left: parent.left
                 anchors.leftMargin: Style.space(3)
                 anchors.verticalCenter: parent.verticalCenter
@@ -254,12 +291,13 @@ Panel {
 
               Text {
                 textFormat: Text.PlainText
+                visible: !row.isHeader
                 anchors.left: parent.left
                 anchors.leftMargin: Style.space(12)
                 anchors.right: rowMeta.left
                 anchors.rightMargin: Style.space(8)
                 anchors.verticalCenter: parent.verticalCenter
-                text: String(modelData.title || "")
+                text: String(story ? story.title || "" : "")
                 color: row.isRead ? root.dim : root.foreground
                 font.family: bar ? bar.fontFamily : Style.font.family
                 font.pixelSize: Style.font.body
@@ -268,6 +306,7 @@ Panel {
 
               Item {
                 id: rowMeta
+                visible: !row.isHeader
                 anchors.right: parent.right
                 anchors.rightMargin: Style.space(6)
                 anchors.verticalCenter: parent.verticalCenter
@@ -279,7 +318,7 @@ Panel {
                   anchors.left: parent.left
                   anchors.verticalCenter: parent.verticalCenter
                   textFormat: Text.PlainText
-                  text: root.sourceLabels[String(modelData.source)] || "?"
+                  text: root.sourceLabels[String(story ? story.source : "")] || "?"
                   color: root.dim
                   font.family: bar ? bar.fontFamily : Style.font.family
                   font.pixelSize: Style.font.caption
@@ -291,7 +330,7 @@ Panel {
                   anchors.leftMargin: Style.space(8)
                   anchors.verticalCenter: parent.verticalCenter
                   textFormat: Text.PlainText
-                  text: root.relativeAge(modelData.updatedMs || 0)
+                  text: root.relativeAge(story ? story.updatedMs || 0 : 0)
                   color: root.dim
                   font.family: bar ? bar.fontFamily : Style.font.family
                   font.pixelSize: Style.font.caption
@@ -299,9 +338,10 @@ Panel {
               }
 
               MouseArea {
+                visible: !row.isHeader
                 anchors.fill: parent
-                onClicked: function(mouse) { root.openStory(row.modelData) }
-                onEntered: root.cursorIndex = row.index
+                onClicked: function(mouse) { root.openStory(row.story) }
+                onEntered: root.cursorIndex = row.itemIndex
               }
             }
           }

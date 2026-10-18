@@ -89,6 +89,23 @@ check('safe link', M.safeLink({ link: 'https://github.com/omacom/omarchy/release
 check('unsafe scheme', M.safeLink({ link: 'file:///etc/passwd' }), '')
 check('unsafe host', M.safeLink({ link: 'https://evil.example/x' }), '')
 
+// ---- groups: one header per project group, newest group first
+const g = M.groupedRows([
+  { id: 'a', source: 'opencode', updatedMs: 300, title: 'oc', link: 'https://github.com/x' },
+  { id: 'b', source: 'site', updatedMs: 900, title: 's1', link: 'https://omarchy.org/x' },
+  { id: 'c', source: 'site', updatedMs: 100, title: 's2', link: 'https://omarchy.org/y' },
+  { id: 'd', source: 'hermes', updatedMs: 200, title: 'he', link: 'https://github.com/h' },
+])
+check('grouped rows length', g.length, 7)
+check('first row is header', g[0].kind, 'header')
+check('groups newest first', [g[0].label, g[3].label, g[5].label], ['Omarchy', 'OpenCode', 'Hermes'])
+check('header counts', [g[0].count, g[3].count, g[5].count], [2, 1, 1])
+check('site folds into omarchy group', M.PROJECTS.site, 'omarchy')
+check('item rows carry origin index', [g[1].itemIndex, g[2].itemIndex], [1, 2])
+check('firstOfGroup flag', [g[1].firstOfGroup, g[2].firstOfGroup], [true, false])
+check('empty list rows', M.groupedRows([]), [])
+check('groupedRows tolerant to null items', M.groupedRows(null), [])
+
 // ---- bounded status text
 check('bound error', M.boundErrorText('Publish'.repeat(200)).length, 120)
 

@@ -302,6 +302,81 @@ function sourcesFromSettings(settings) {
   })
 }
 
+// ---- groups ---------------------------------------------------------------
+// Each feed source belongs to a project group; the panel renders one header
+// per group present in the list. The official omarchy.org news and the
+// omarchy release feed both live under "omarchy", per the plugin's story:
+// one ecosystem, one project, extra feeds inside the same group.
+
+var PROJECTS = {
+  site: "omarchy",
+  omarchy: "omarchy",
+  opencode: "opencode",
+  hermes: "hermes",
+  marketplace: "marketplace",
+}
+
+var PROJECT_LABELS = {
+  omarchy: "Omarchy",
+  opencode: "OpenCode",
+  hermes: "Hermes",
+  marketplace: "Marketplace",
+}
+
+var PROJECT_ORDER = ["omarchy", "opencode", "hermes", "marketplace"]
+
+function projectIndexOf(groupId) {
+  var i = PROJECT_ORDER.indexOf(groupId)
+  return i === -1 ? PROJECT_ORDER.length : i
+}
+
+// Rows for the panel: a header row before each present group, then that
+// group's items in list order (items arrive date-sorted). Groups are laid
+// out newest-first — the group owning the freshest item opens the list —
+// with PROJECT_ORDER as the tiebreak. Item rows carry `itemIndex`, the
+// item's index in the original array, because the keyboard cursor still
+// addresses items, never headers.
+function groupedRows(items) {
+  var rows = []
+  var buckets = {}
+  var order = []
+  var list = Array.isArray(items) ? items : []
+  for (var i = 0; i < list.length; i++) {
+    var item = list[i] || {}
+    var gid = PROJECTS[item.source] || "omarchy"
+    if (!buckets[gid]) {
+      buckets[gid] = []
+      order.push(gid)
+    }
+    buckets[gid].push(i)
+  }
+  order.sort(function (a, b) {
+    var am = buckets[a].length ? list[buckets[a][0]].updatedMs || 0 : 0
+    var bm = buckets[b].length ? list[buckets[b][0]].updatedMs || 0 : 0
+    if (bm !== am) return bm - am
+    return projectIndexOf(a) - projectIndexOf(b)
+  })
+  for (var g = 0; g < order.length; g++) {
+    var gid = order[g]
+    var idxs = buckets[gid]
+    rows.push({
+      kind: "header",
+      groupId: gid,
+      label: PROJECT_LABELS[gid] || gid,
+      count: idxs.length,
+    })
+    for (var j = 0; j < idxs.length; j++) {
+      rows.push({
+        kind: "item",
+        itemIndex: idxs[j],
+        item: list[idxs[j]],
+        firstOfGroup: j === 0,
+      })
+    }
+  }
+  return rows
+}
+
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     SOURCES: SOURCES,
@@ -326,6 +401,9 @@ if (typeof module !== "undefined" && module.exports) {
     mergeSeen: mergeSeen,
     markAllSeen: markAllSeen,
     boundErrorText: boundErrorText,
+    groupedRows: groupedRows,
+    PROJECTS: PROJECTS,
+    PROJECT_LABELS: PROJECT_LABELS,
     sourcesFromSettings: sourcesFromSettings,
   }
 }
