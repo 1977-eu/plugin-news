@@ -139,9 +139,9 @@ Item {
 
     stdout: StdioCollector {
       waitForEnd: true
-      onStreamFinished: root.sourceCollected(parent.sourceId, String(text || ""))
+      onStreamFinished: root.sourceCollected(sourceId, String(text || ""))
     }
-    onExited: function(exitCode) { root.sourceExited(parent.sourceId, exitCode) }
+    onExited: function(exitCode) { root.sourceExited(sourceId, exitCode) }
   }
 
   SourceFetch {
