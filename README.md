@@ -2,8 +2,8 @@
 
 [![Built for Omarchy: Plugin](https://raw.githubusercontent.com/tcballard/omarchy-badges/75975e5b5bf75e7ede3764bcd2950046f7abfe2c/badges/v1/omarchy-plugin.svg)](https://github.com/tcballard/omarchy-badges)
 
-Releases e novos plugins do ecossistema: Omarchy, OpenCode, Hermes e
-adições recentes ao marketplace, com badge de não-lidos e popup de leitura.
+Releases e news do ecossistema: notícias oficiais do omarchy.org, releases de
+Omarchy, OpenCode e Hermes, com badge de não-lidos e popup de leitura.
 
 Kinds: bar-widget, service
 
@@ -11,10 +11,11 @@ Kinds: bar-widget, service
 
 | Fonte | Feed | Exemplo |
 |---|---|---|
+| Omarchy.org | `https://omarchy.org/news/rss.xml` (RSS 2.0, fonte oficial) | "Greptile joins as a Distinguished Corporate Patron" |
 | Omarchy | releases do `omacom/omarchy` | `v4.0.5` |
 | OpenCode | releases do `anomalyco/opencode` | `v2.0.32` |
 | Hermes | releases do `NousResearch/Hermes-Agent` | releases estáveis (canary oculto por padrão) |
-| Marketplace | commits no `registry.json` do `omarchy-plugin-marketplace` | "New plugin: Luddite Scout" |
+| Marketplace *(opcional, off por padrão)* | commits no `registry.json` do `omarchy-plugin-marketplace` | "New plugin: Luddite Scout" |
 
 Os IDs canônicos dos repositórios mudaram de dono (`basecamp/omarchy` →
 `omacom/omarchy`, `sst/opencode` → `anomalyco/opencode`); o plugin fixa as
@@ -37,8 +38,9 @@ URLs novas diretamente.
   externo ao plugin) e sobrevive a reinícios do shell.
 - Configuração no `shell.json` inline na entrada: `pollMinutes` (5–240,
   padrão 20), `filterCanary` (padrão true), `maxItems` (20–200, padrão 80)
-  e toggles por fonte (`sourceOmarchy`, `sourceOpencode`, `sourceHermes`,
-  `sourceMarketplace`).
+  e toggles por fonte (`sourceSite` — feed oficial de notícias do
+  omarchy.org, ligado por padrão; `sourceMarketplace` — commits de novos
+  plugins, off por padrão; `sourceOmarchy`/`sourceOpencode`/`sourceHermes`).
 
 ## Requisitos
 

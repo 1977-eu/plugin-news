@@ -41,6 +41,24 @@ check('marketplace count', mp.length, 2)
 check('marketplace new plugin', mp[1].title, 'New plugin: Luddite Scout')
 check('marketplace omamail', mp[0].title, 'New plugin: Omamail')
 
+// ---- omarchy.org news RSS parses through parseFeed dispatch
+const site = M.parseFeed(fixture.siteRss, 'site')
+check('site rss count', site.length, 2)
+check('site rss id', site[0].id, 'https://omarchy.org/news/2026/10/greptile-joins')
+check('site rss title', site[0].title, 'Greptile joins as a Distinguished Corporate Patron')
+check('site rss link', site[0].link, 'https://omarchy.org/news/2026/10/greptile-joins')
+check('site rss pubDate (rfc822)', site[0].updatedMs, Date.parse('Thu, 15 Oct 2026 10:00:00 GMT'))
+check('site rss sourceLabel', site[0].sourceLabel, 'Omarchy.org')
+check('parseFeed atom passthrough', M.parseFeed(fixture.omarchyAtom, 'omarchy')[0].title, 'v4.0.5')
+check('parseFeed empty', M.parseFeed('', 'site'), [])
+check('rssToItems without guid uses link',
+  M.rssToItems(fixture.siteRss.replace(/<guid[^<]*<\/guid>/, ''), 'site')[0].id,
+  'https://omarchy.org/news/2026/10/greptile-joins')
+check('site source off', M.applySettings(site, { sourceSite: false }), [])
+check('safe link omarchy.org host', M.safeLink({ link: 'https://omarchy.org/news/x' }),
+  'https://omarchy.org/news/x')
+check('sourcesFromSettings site off', M.sourcesFromSettings({ sourceSite: false }).includes('site'), false)
+
 // ---- canary and settings filtering
 const filtered = M.applySettings(fixture.rawItems, { filterCanary: true })
 check('canary filtered', filtered.map(i => i.id), ['idh', 'ido'])

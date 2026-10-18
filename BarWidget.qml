@@ -38,7 +38,8 @@ BarWidget {
       sourceOmarchy: setting("sourceOmarchy", true) !== false,
       sourceOpencode: setting("sourceOpencode", true) !== false,
       sourceHermes: setting("sourceHermes", true) !== false,
-      sourceMarketplace: setting("sourceMarketplace", true) !== false,
+      sourceMarketplace: setting("sourceMarketplace", false) !== false,
+      sourceSite: setting("sourceSite", true) !== false,
     }
     svc.applySettings(JSON.stringify(payload))
   }

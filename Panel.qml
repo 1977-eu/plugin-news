@@ -43,7 +43,7 @@ Panel {
   readonly property var cursorItem: deadList ? null : items[cursorIndex]
 
   readonly property var sourceLabels: ({
-    omarchy: "OM", opencode: "OC", hermes: "HE", marketplace: "MP",
+    omarchy: "OM", opencode: "OC", hermes: "HE", marketplace: "MP", site: "NW",
   })
 
   function refreshNow() {

@@ -32,7 +32,8 @@ Item {
     sourceOmarchy: true,
     sourceOpencode: true,
     sourceHermes: true,
-    sourceMarketplace: true,
+    sourceMarketplace: false,
+    sourceSite: true,
   })
 
   // Newest first, capped by settings.maxItems.
@@ -100,7 +101,8 @@ Item {
       sourceOmarchy: next ? next.sourceOmarchy !== false : true,
       sourceOpencode: next ? next.sourceOpencode !== false : true,
       sourceHermes: next ? next.sourceHermes !== false : true,
-      sourceMarketplace: next ? next.sourceMarketplace !== false : true,
+      sourceMarketplace: next ? next.sourceMarketplace !== false : false,
+      sourceSite: next ? next.sourceSite !== false : true,
     }
     var sourcesChanged = NewsModel.sourcesFromSettings(clean).join(",")
       !== NewsModel.sourcesFromSettings(root.settings).join(",")
@@ -262,7 +264,7 @@ Item {
       for (var i = 0; i < list.length; i++) enabled[list[i]] = true
       for (var key in rawBySource) {
         if (!enabled[key]) continue
-        var parsed = NewsModel.atomToItems(rawBySource[key], key)
+        var parsed = NewsModel.parseFeed(rawBySource[key], key)
         for (var j = 0; j < parsed.length; j++) all.push(parsed[j])
       }
       mergedItems = NewsModel.applySettings(NewsModel.dedupe(all), root.settings)

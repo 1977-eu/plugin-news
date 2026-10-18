@@ -27,16 +27,64 @@
       "sourceOmarchy": true,
       "sourceOpencode": true,
       "sourceHermes": true,
-      "sourceMarketplace": true
+      "sourceMarketplace": false,
+      "sourceSite": true
     },
     "schema": [
-      { "key": "pollMinutes", "type": "integer", "label": "Polling (minutes)", "min": 5, "max": 240, "step": 5, "defaultValue": 20 },
-      { "key": "filterCanary", "type": "boolean", "label": "Hide Hermes canary releases", "defaultValue": true },
-      { "key": "maxItems", "type": "integer", "label": "Kept items", "min": 20, "max": 200, "step": 10, "defaultValue": 80 },
-      { "key": "sourceOmarchy", "type": "boolean", "label": "Omarchy releases", "defaultValue": true },
-      { "key": "sourceOpencode", "type": "boolean", "label": "OpenCode releases", "defaultValue": true },
-      { "key": "sourceHermes", "type": "boolean", "label": "Hermes Agent releases", "defaultValue": true },
-      { "key": "sourceMarketplace", "type": "boolean", "label": "New marketplace plugins", "defaultValue": true }
+      {
+        "key": "pollMinutes",
+        "type": "integer",
+        "label": "Polling (minutes)",
+        "min": 5,
+        "max": 240,
+        "step": 5,
+        "defaultValue": 20
+      },
+      {
+        "key": "filterCanary",
+        "type": "boolean",
+        "label": "Hide Hermes canary releases",
+        "defaultValue": true
+      },
+      {
+        "key": "maxItems",
+        "type": "integer",
+        "label": "Kept items",
+        "min": 20,
+        "max": 200,
+        "step": 10,
+        "defaultValue": 80
+      },
+      {
+        "key": "sourceOmarchy",
+        "type": "boolean",
+        "label": "Omarchy releases",
+        "defaultValue": true
+      },
+      {
+        "key": "sourceOpencode",
+        "type": "boolean",
+        "label": "OpenCode releases",
+        "defaultValue": true
+      },
+      {
+        "key": "sourceHermes",
+        "type": "boolean",
+        "label": "Hermes Agent releases",
+        "defaultValue": true
+      },
+      {
+        "key": "sourceMarketplace",
+        "type": "boolean",
+        "label": "Marketplace: new plugin commits",
+        "defaultValue": false
+      },
+      {
+        "key": "sourceSite",
+        "type": "boolean",
+        "label": "Omarchy.org news",
+        "defaultValue": true
+      }
     ]
   }
 }

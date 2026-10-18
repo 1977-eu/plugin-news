@@ -29,10 +29,15 @@ var SOURCES = {
     url: "https://github.com/omacom/omarchy-plugin-marketplace/commits/main/registry.json.atom",
     label: "Marketplace",
   },
+  site: {
+    url: "https://omarchy.org/news/rss.xml",
+    label: "Omarchy.org",
+  },
 }
 
 var ALLOWED_ORIGIN_HOSTS = [
   "github.com",
+  "omarchy.org",
 ]
 
 // ---- Atom parsing ----------------------------------------------------------
@@ -77,8 +82,43 @@ function entryLink(entry) {
 function parseDateIso8601(text) {
   var t = decodeEntities(text).trim()
   if (!t) return 0
+  // RFC 822 dates (RSS pubDate, e.g. "Thu, 15 Oct 2026 10:00:00 GMT")
+  // parse natively alongside ISO 8601.
   var ms = Date.parse(t)
   return isNaN(ms) ? 0 : ms
+}
+
+function rssToItems(rssText, sourceId) {
+  var out = []
+  var spec = SOURCES[sourceId] || { label: sourceId }
+  var itemsRe = /<item>([\s\S]*?)<\/item>/g
+  var e
+  while ((e = itemsRe.exec(String(rssText || ""))) !== null && out.length < MAX_ITEMS_INPUT) {
+    var entry = e[1]
+    var id = decodeEntities(entryTag(entry, "guid")).trim()
+    var link = decodeEntities(entryTag(entry, "link")).trim()
+    if (!id) id = link
+    var title = decodeEntities(entryTag(entry, "title")).trim()
+    if (!id || !title) continue
+    out.push({
+      id: id.slice(0, MAX_URL),
+      source: sourceId,
+      sourceLabel: spec.label,
+      title: title.slice(0, MAX_TITLE),
+      link: link.slice(0, MAX_URL),
+      updatedMs: parseDateIso8601(entryTag(entry, "pubDate")),
+    })
+  }
+  return out
+}
+
+function parseFeed(feedText, sourceId) {
+  // The four GitHub sources emit Atom (<entry>); omarchy.org news is
+  // RSS 2.0 (<item>). Dispatch on the root element so one collector path
+  // serves both. An unknown markup yields no items, never a thrown error.
+  var t = String(feedText || "")
+  if (/<item>/.test(t) && !/<entry>/.test(t)) return rssToItems(t, sourceId)
+  return atomToItems(t, sourceId)
 }
 
 function atomToItems(atomText, sourceId) {
@@ -140,6 +180,7 @@ function applySettings(items, settings) {
     opencode: !(settings && settings.sourceOpencode === false),
     hermes: !(settings && settings.sourceHermes === false),
     marketplace: !(settings && settings.sourceMarketplace === false),
+    site: !(settings && settings.sourceSite === false),
   }
   for (var i = 0; i < items.length; i++) {
     var item = items[i]
@@ -254,6 +295,7 @@ function sourcesFromSettings(settings) {
     "opencode",
     "hermes",
     "marketplace",
+    "site",
   ].filter(function (id) {
     if (settings && settings["source" + id.charAt(0).toUpperCase() + id.slice(1)] === false) return false
     return true
@@ -271,6 +313,8 @@ if (typeof module !== "undefined" && module.exports) {
     entryLink: entryLink,
     parseDateIso8601: parseDateIso8601,
     atomToItems: atomToItems,
+    rssToItems: rssToItems,
+    parseFeed: parseFeed,
     applyMarketplaceTitle: applyMarketplaceTitle,
     isCanary: isCanary,
     safeLink: safeLink,
