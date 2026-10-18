@@ -60,10 +60,10 @@ check('unread mark a', M.unreadCount([{ id: 'a' }, { id: 'b' }], { a: 1 }), 1)
 // ---- seen-state persistence is bounded and forgiving
 check('normalize garbage', M.normalizeSeen('[broken').read, {})
 const merged = M.mergeSeen({}, ['x'], 5)
-check('merge seen', merged.read, { x: 5 })
+check('merge seen', merged, { x: 5 })
 const full = {};
 for (let i = 0; i < M.MAX_SEEN + 50; i++) full['key-' + i] = i
-check('seen bounded', Object.keys(M.mergeSeen(full, ['late']).read).length, M.MAX_SEEN)
+check('seen bounded', Object.keys(M.mergeSeen(full, ['late'])).length, M.MAX_SEEN)
 
 // ---- links only open inside our allowlist
 check('safe link', M.safeLink({ link: 'https://github.com/omacom/omarchy/releases/tag/v4.0.5' }),

@@ -194,7 +194,11 @@ function normalizeSeen(raw) {
   var parsed
   try { parsed = JSON.parse(String(raw || "{}")) } catch (e) { parsed = null }
   if (!parsed || typeof parsed !== "object") parsed = {}
-  var read = parsed.read && typeof parsed.read === "object" ? parsed.read : {}
+  // Tolerate a document wrapped one level too deep: view.read is meant to
+  // be the flat id→timestamp map, and a wrapped copy must not become keys.
+  var candidate = parsed.read
+  if (candidate && candidate.read && typeof candidate.read === "object") candidate = candidate.read
+  var read = candidate && typeof candidate === "object" ? candidate : {}
   var out = {}
   var n = 0
   for (var key in read) {
@@ -224,7 +228,7 @@ function mergeSeen(read, itemIds, timestampMs) {
     if (!key) continue
     if (!next[key]) next[key] = ts
   }
-  return { version: 1, read: trimSeen(next, MAX_SEEN) }
+  return trimSeen(next, MAX_SEEN)
 }
 
 function markAllSeen(read, items, timestampMs) {
