@@ -54,7 +54,7 @@ URLs novas diretamente.
 - Omarchy 4 com suporte a plugins Quattro.
 - Somente `curl` (já presente no Omarchy); sem autenticação nem setup
   privilegiado. Só requisições GET anônimas aos feeds acima, com limite
-  de 15 s e 256 KiB por fonte.
+  de 15 s e 1 MiB por fonte.
 
 ## Installation
 

@@ -142,15 +142,17 @@ Item {
   // ---- fetching -----------------------------------------------------------
 
   // One curl per source: argument arrays only, hard time and size bounds,
-  // no shell. GitHub atom feeds run well under 100 KB; 256 KiB covers any
-  // burst the feed ever produces and refuses bigger bodies outright.
+  // no shell. Sizes vary wildly — OpenCode's compact 7 KB atom vs
+  // Hermes Agent's 715 KB one with long release notes — so the guard
+  // allows up to 1 MiB decoded (and --compressed), still bounded by the
+  // parse-time item caps; bigger bodies are refused outright.
   component SourceFetch: Process {
     property string sourceId: ""
 
     // Overridden per instance with the fixed feed URL as the last argument.
     command: [
       "curl", "--silent", "--show-error", "--location",
-      "--max-time", "15", "--max-redirs", "3", "--max-filesize", "262144",
+      "--max-time", "15", "--max-redirs", "3", "--max-filesize", "1048576", "--compressed",
       "-H", "Accept: application/atom+xml",
       "--url", ""
     ]
@@ -259,7 +261,7 @@ Item {
       // Atom stores items in <entry>, RSS 2.0 in <item>; both are ours now.
       var hasEntries = raw.indexOf("<entry>") >= 0 || raw.indexOf("<item>") >= 0
       if (hasEntries) {
-        rawBySource[sourceId] = raw.slice(0, 262144)
+        rawBySource[sourceId] = raw.slice(0, 1048576)
         var errs = Object.assign({}, sourceErrors)
         delete errs[sourceId]
         sourceErrors = errs
@@ -351,6 +353,7 @@ Item {
         // from the CLI without dumping payloads.
         sources: NewsModel.sourcesFromSettings(root.settings),
         sourcesStatus: view.sourceStatus,
+        sourcesErrors: view.sourceErrors,
       })
     }
     function applySettings(settingsJson: string): string {
