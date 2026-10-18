@@ -98,7 +98,6 @@ Panel {
     focusTarget: keyCatcher
     contentWidth: panel.fittedContentWidth(root.listWidth)
     contentHeight: panel.fittedContentHeight(listColumn.implicitHeight, Style.space(520))
-
     PanelKeyCatcher {
       id: keyCatcher
       anchors.fill: parent
@@ -152,7 +151,7 @@ Panel {
           id: refreshButton
           iconText: root.refreshing ? "…" : "↻"
           tooltipText: "Refresh now (R)"
-          visible: !root.refreshing || true
+          visible: true
           foreground: root.foreground
           hasCursor: true
           anchors.right: markAllButton.left
@@ -197,18 +196,19 @@ Panel {
         font.pixelSize: Style.font.body
       }
 
+      // ---- list
       Flickable {
         id: listScroll
         width: parent.width
-        height: Math.min(listColumn.rowsHeight, Style.space(420))
+        height: Math.min(rowsColumn.implicitHeight, Style.space(420))
         contentWidth: width
-        contentHeight: listColumn.rowsHeight
+        contentHeight: rowsColumn.implicitHeight
         clip: true
         interactive: contentHeight > height
         boundsBehavior: Flickable.StopAtBounds
 
         Column {
-          id: listColumn
+          id: rowsColumn
           width: listScroll.width
           spacing: Style.space(2)
 
