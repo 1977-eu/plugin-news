@@ -246,6 +246,9 @@ Item {
     property var read: ({})
     property var mergedItems: []
     property string lastError: ""
+    // Per-source failure detail, e.g. "hermes: curl 22"; the aggregated
+    // line keeps names short but carries the first real cause with it.
+    property var sourceErrors: ({})
     // per source: idle | loading | ok | bad | err
     property var sourceStatus: ({
       omarchy: "idle", opencode: "idle", hermes: "idle", marketplace: "idle", site: "idle",
@@ -255,7 +258,12 @@ Item {
     function collect(sourceId, raw) {
       // Atom stores items in <entry>, RSS 2.0 in <item>; both are ours now.
       var hasEntries = raw.indexOf("<entry>") >= 0 || raw.indexOf("<item>") >= 0
-      if (hasEntries) rawBySource[sourceId] = raw.slice(0, 262144)
+      if (hasEntries) {
+        rawBySource[sourceId] = raw.slice(0, 262144)
+        var errs = Object.assign({}, sourceErrors)
+        delete errs[sourceId]
+        sourceErrors = errs
+      }
       setSourceStatus(sourceId, hasEntries ? "ok" : "err")
       reapply()
       return hasEntries
@@ -269,15 +277,22 @@ Item {
 
     function bindError(sourceId, message) {
       setSourceStatus(sourceId, "err")
-      lastError = NewsModel.boundErrorText(message)
+      sourceErrors[sourceId] = NewsModel.boundErrorText(String(message || "failed"))
+      lastError = NewsModel.boundErrorText(String(message))
     }
 
     function boundLastError() {
       var failed = []
+      var detail = ""
       for (var key in sourceStatus)
-        if (sourceStatus[key] === "err" || sourceStatus[key] === "bad") failed.push(key)
+        if (sourceStatus[key] === "err" || sourceStatus[key] === "bad") {
+          failed.push(key)
+          if (!detail && sourceErrors[key]) detail = sourceErrors[key]
+        }
       return failed.length > 0
-        ? NewsModel.boundErrorText("Failed: " + failed.join(", ")) : lastError
+        ? NewsModel.boundErrorText("Failed: " + failed.join(", ")
+          + (detail ? " (" + detail + ")" : ""))
+        : lastError
     }
 
     function reapply() {
@@ -332,6 +347,10 @@ Item {
         error: root.lastError !== "",
         items: view.items.length,
         unread: root.unreadCount,
+        // Sources currently enabled, so a mis-synced toggle is visible
+        // from the CLI without dumping payloads.
+        sources: NewsModel.sourcesFromSettings(root.settings),
+        sourcesStatus: view.sourceStatus,
       })
     }
     function applySettings(settingsJson: string): string {
