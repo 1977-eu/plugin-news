@@ -35,9 +35,9 @@ BarWidget {
       pollMinutes: setting("pollMinutes", 20),
       filterCanary: setting("filterCanary", true) !== false,
       maxItems: setting("maxItems", 80),
-      sourceOmarchy: setting("sourceOmarchy", true) !== false,
-      sourceOpencode: setting("sourceOpencode", true) !== false,
-      sourceHermes: setting("sourceHermes", true) !== false,
+      sourceOmarchy: setting("sourceOmarchy", false) !== false,
+      sourceOpencode: setting("sourceOpencode", false) !== false,
+      sourceHermes: setting("sourceHermes", false) !== false,
       sourceMarketplace: setting("sourceMarketplace", false) !== false,
       sourceSite: setting("sourceSite", true) !== false,
     }

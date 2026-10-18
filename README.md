@@ -2,20 +2,26 @@
 
 [![Built for Omarchy: Plugin](https://raw.githubusercontent.com/tcballard/omarchy-badges/75975e5b5bf75e7ede3764bcd2950046f7abfe2c/badges/v1/omarchy-plugin.svg)](https://github.com/tcballard/omarchy-badges)
 
-Releases e news do ecossistema: notícias oficiais do omarchy.org, releases de
-Omarchy, OpenCode e Hermes, com badge de não-lidos e popup de leitura.
+Notícias oficiais do omarchy.org (RSS), com badge de não-lidos e popup de
+leitura; releases de Omarchy, OpenCode e Hermes e commits de novos plugins
+do marketplace ficam disponíveis como fontes opcionais em settings.
 
 Kinds: bar-widget, service
 
 ## O que mostra
 
-| Fonte | Feed | Exemplo |
-|---|---|---|
-| Omarchy.org | `https://omarchy.org/news/rss.xml` (RSS 2.0, fonte oficial) | "Greptile joins as a Distinguished Corporate Patron" |
-| Omarchy | releases do `omacom/omarchy` | `v4.0.5` |
-| OpenCode | releases do `anomalyco/opencode` | `v2.0.32` |
-| Hermes | releases do `NousResearch/Hermes-Agent` | releases estáveis (canary oculto por padrão) |
-| Marketplace *(opcional, off por padrão)* | commits no `registry.json` do `omarchy-plugin-marketplace` | "New plugin: Luddite Scout" |
+| Fonte | Feed | Padrão | Exemplo |
+|---|---|---|---|
+| Omarchy.org | `https://omarchy.org/news/rss.xml` (RSS 2.0, fonte oficial) | **on** | "Greptile joins as a Distinguished Corporate Patron" |
+| Omarchy | releases do `omacom/omarchy` | off | `v4.0.5` |
+| OpenCode | releases do `anomalyco/opencode` | off | `v2.0.32` |
+| Hermes | releases do `NousResearch/Hermes-Agent` | off | releases estáveis (canary oculto por padrão) |
+| Marketplace | commits no `registry.json` do `omarchy-plugin-marketplace` | off | "New plugin: Luddite Scout" |
+
+Por padrão a lista mostra **só as notícias oficiais** do omarchy.org; os
+releases e o feed de commits do marketplace continuam disponíveis via
+toggles (`sourceOmarchy`, `sourceOpencode`, `sourceHermes`,
+`sourceMarketplace`) em settings.
 
 Os IDs canônicos dos repositórios mudaram de dono (`basecamp/omarchy` →
 `omacom/omarchy`, `sst/opencode` → `anomalyco/opencode`); o plugin fixa as

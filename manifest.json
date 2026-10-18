@@ -24,9 +24,9 @@
       "pollMinutes": 20,
       "filterCanary": true,
       "maxItems": 80,
-      "sourceOmarchy": true,
-      "sourceOpencode": true,
-      "sourceHermes": true,
+      "sourceOmarchy": false,
+      "sourceOpencode": false,
+      "sourceHermes": false,
       "sourceMarketplace": false,
       "sourceSite": true
     },
@@ -59,19 +59,19 @@
         "key": "sourceOmarchy",
         "type": "boolean",
         "label": "Omarchy releases",
-        "defaultValue": true
+        "defaultValue": false
       },
       {
         "key": "sourceOpencode",
         "type": "boolean",
         "label": "OpenCode releases",
-        "defaultValue": true
+        "defaultValue": false
       },
       {
         "key": "sourceHermes",
         "type": "boolean",
         "label": "Hermes Agent releases",
-        "defaultValue": true
+        "defaultValue": false
       },
       {
         "key": "sourceMarketplace",
