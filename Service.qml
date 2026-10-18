@@ -30,8 +30,8 @@ Item {
     filterCanary: true,
     maxItems: 80,
     sourceOmarchy: false,
-    sourceOpencode: false,
-    sourceHermes: false,
+    sourceOpencode: true,
+    sourceHermes: true,
     sourceMarketplace: false,
     sourceSite: true,
   })
@@ -115,8 +115,8 @@ Item {
       filterCanary: obj ? obj.filterCanary !== false : true,
       maxItems: NewsModel.coerceInt(obj && obj.maxItems, 80, 20, 200),
       sourceOmarchy: obj ? obj.sourceOmarchy !== false : false,
-      sourceOpencode: obj ? obj.sourceOpencode !== false : false,
-      sourceHermes: obj ? obj.sourceHermes !== false : false,
+      sourceOpencode: obj ? obj.sourceOpencode !== false : true,
+      sourceHermes: obj ? obj.sourceHermes !== false : true,
       sourceMarketplace: obj ? obj.sourceMarketplace !== false : false,
       sourceSite: obj ? obj.sourceSite !== false : true,
     }

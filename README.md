@@ -13,15 +13,16 @@ Kinds: bar-widget, service
 | Fonte | Feed | Padrão | Exemplo |
 |---|---|---|---|
 | Omarchy.org | `https://omarchy.org/news/rss.xml` (RSS 2.0, fonte oficial) | **on** | "Greptile joins as a Distinguished Corporate Patron" |
+| OpenCode | releases do `anomalyco/opencode` | **on** | `v2.0.32` |
+| Hermes | releases do `NousResearch/Hermes-Agent` | **on** | releases estáveis (canary oculto por padrão) |
 | Omarchy | releases do `omacom/omarchy` | off | `v4.0.5` |
-| OpenCode | releases do `anomalyco/opencode` | off | `v2.0.32` |
-| Hermes | releases do `NousResearch/Hermes-Agent` | off | releases estáveis (canary oculto por padrão) |
 | Marketplace | commits no `registry.json` do `omarchy-plugin-marketplace` | off | "New plugin: Luddite Scout" |
 
-Por padrão a lista mostra **só as notícias oficiais** do omarchy.org; os
-releases e o feed de commits do marketplace continuam disponíveis via
-toggles (`sourceOmarchy`, `sourceOpencode`, `sourceHermes`,
-`sourceMarketplace`) em settings.
+Por padrão a lista mostra **as notícias oficiais do omarchy.org + releases de
+OpenCode e Hermes**. Omarchy releases e o feed de commits do marketplace
+continuam disponíveis via toggles (`sourceOmarchy`, `sourceMarketplace`) em
+settings. O painel agrupa por projeto: news oficiais e releases do Omarchy
+caem no mesmo grupo "OMARCHY"; OpenCode e Hermes têm grupos próprios.
 
 Os IDs canônicos dos repositórios mudaram de dono (`basecamp/omarchy` →
 `omacom/omarchy`, `sst/opencode` → `anomalyco/opencode`); o plugin fixa as

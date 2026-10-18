@@ -25,8 +25,8 @@
       "filterCanary": true,
       "maxItems": 80,
       "sourceOmarchy": false,
-      "sourceOpencode": false,
-      "sourceHermes": false,
+      "sourceOpencode": true,
+      "sourceHermes": true,
       "sourceMarketplace": false,
       "sourceSite": true
     },
@@ -65,13 +65,13 @@
         "key": "sourceOpencode",
         "type": "boolean",
         "label": "OpenCode releases",
-        "defaultValue": false
+        "defaultValue": true
       },
       {
         "key": "sourceHermes",
         "type": "boolean",
         "label": "Hermes Agent releases",
-        "defaultValue": false
+        "defaultValue": true
       },
       {
         "key": "sourceMarketplace",
