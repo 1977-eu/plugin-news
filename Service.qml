@@ -59,15 +59,24 @@ Item {
     // No overlapping cycles: a poll landing mid-cycle becomes the next one.
     if (root.activeFetches > 0) return
     var enabled = NewsModel.sourcesFromSettings(root.settings)
-    root.activeFetches = enabled.length
+    // Only sources with a live fetcher may be counted, or a settings/source
+    // mismatch would pin activeFetches above zero and freeze the badge.
+    root.activeFetches = 0
     root.cycleHadSuccess = false
     for (var i = 0; i < enabled.length; i++) {
       var proc = root.fetchers[enabled[i]]
       if (proc) {
-        view.setSourceStatus(enabled[i], "loading")
-        proc.running = true
+        root.activeFetches++
       } else {
         view.setSourceStatus(enabled[i], "err")
+      }
+    }
+    if (root.activeFetches === 0) return
+    for (i = 0; i < enabled.length; i++) {
+      proc = root.fetchers[enabled[i]]
+      if (proc) {
+        view.setSourceStatus(enabled[i], "loading")
+        proc.running = true
       }
     }
   }
@@ -174,12 +183,20 @@ Item {
       command[command.length - 1] = "https://github.com/omacom/omarchy-plugin-marketplace/commits/main/registry.json.atom"
     }
   }
+  SourceFetch {
+    id: fetchSite
+    sourceId: "site"
+    Component.onCompleted: {
+      command[command.length - 1] = "https://omarchy.org/news/rss.xml"
+    }
+  }
 
   readonly property var fetchers: ({
     omarchy: fetchOmarchy,
     opencode: fetchOpencode,
     hermes: fetchHermes,
     marketplace: fetchMarketplace,
+    site: fetchSite,
   })
 
   // ---- seen-state persistence (XDG state, external owner) -----------------
