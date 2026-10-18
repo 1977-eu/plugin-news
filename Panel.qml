@@ -18,12 +18,17 @@ Panel {
 
   property var anchorItem: null
   property var hostWidget: null
+  // The widget hands its service-capable PluginBarApi shell down; on the
+  // built-in bar that carries serviceFor() for own-plugin lookups only.
+  property var shell: null
   readonly property var barIdentity: hostWidget || root
 
-  // Resolved at the widget: the badge holds the live service and hands it
-  // down. A service-less replacement bar leaves the list empty with a
-  // friendly note rather than a hostile blank surface.
-  readonly property var svc: hostWidget ? (hostWidget.svc || null) : null
+  // Resolution order: whatever the badge already resolved (hostWidget.svc),
+  // else the injected shell facade. A service-less replacement bar leaves
+  // the list empty with a friendly note rather than a hostile blank surface.
+  readonly property var shellFacade: shell && typeof shell.serviceFor === "function" ? shell : null
+  readonly property var svc: (hostWidget && hostWidget.svc) ? hostWidget.svc
+    : (shellFacade ? shellFacade.serviceFor("1977.news") || null : null)
   readonly property var items: svc ? svc.items : []
   readonly property bool refreshing: svc ? svc.refreshing : false
   readonly property bool stale: svc ? svc.stale : false

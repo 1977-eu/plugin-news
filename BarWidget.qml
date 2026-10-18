@@ -14,11 +14,14 @@ BarWidget {
   id: root
   moduleName: "1977.news"
 
-  // Own-service lookup. Third-party widgets may only ever reach their own
-  // service through the injected facade; on a replacement bar that facade
-  // omits the service, so the badge degrades to a plain launcher there.
-  readonly property var svc: root.shell && typeof root.shell.serviceFor === "function"
-    ? root.shell.serviceFor("1977.news") || null : null
+  // Own-service lookup. Under the trusted built-in bar the widget's `bar` is
+  // a PluginBarApi facade whose `shell` is the service-capable plugin facade;
+  // on a replacement bar that facade arrives without a shell, so the badge
+  // degrades to a plain launcher there.
+  readonly property var shellFacade: root.bar && root.bar.shell ? root.bar.shell
+    : (root.shell || null)
+  readonly property var svc: shellFacade && typeof shellFacade.serviceFor === "function"
+    ? shellFacade.serviceFor("1977.news") || null : null
   readonly property int unreadCount: svc ? svc.unreadCount : 0
   readonly property bool svcRefreshing: svc ? svc.refreshing : false
   readonly property bool svcStale: svc ? svc.stale : false
@@ -41,6 +44,7 @@ BarWidget {
   }
 
   onSvcChanged: syncSettings()
+  onBarChanged: { injectPanel(); syncSettings() }
   onSettingsChanged: { syncSettings(); injectPanel() }
 
   function refreshNow() {
@@ -65,6 +69,7 @@ BarWidget {
     if ("settings" in target) target.settings = root.settings
     if ("anchorItem" in target) target.anchorItem = button
     if ("hostWidget" in target) target.hostWidget = root
+    if ("shell" in target) target.shell = root.shellFacade
   }
 
   // Marked read in one place: opening the list everybody already sees in
@@ -75,8 +80,6 @@ BarWidget {
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
-
-  onBarChanged: injectPanel()
 
   Loader {
     id: panelLoader
@@ -93,8 +96,9 @@ BarWidget {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: root.vertical ? (root.unreadCount > 0 ? "N" : "n")
-      : "News"
+    text: root.vertical
+      ? (root.unreadCount > 0 ? "N" : "n")
+      : (root.unreadCount > 0 ? "News " + root.unreadCount : "News")
     labelVisible: !root.vertical
     hasVisualContent: true
     horizontalMargin: 8.75
@@ -111,31 +115,7 @@ BarWidget {
       else root.togglePanel()
     }
 
-    // Unread badge: a small count beside the label, absent when everything
-    // is read so a settled inbox does not paint a permanent chip.
-    Rectangle {
-      id: badge
-      visible: root.unreadCount > 0
-      radius: height / 2
-      height: Math.max(Style.space(14), Math.round(Style.bar.iconSlot * 0.5))
-      width: badgeText.implicitWidth + Style.space(8)
-      color: (bar ? bar.urgent : Commons.Color.accent)
-      anchors.verticalCenter: parent.verticalCenter
-      anchors.left: parent.right
-      anchors.leftMargin: -Style.space(16)
-
-      Text {
-        id: badgeText
-        anchors.centerIn: parent
-        textFormat: Text.PlainText
-        text: String(root.unreadCount)
-        color: Commons.Color.background
-        font.family: button.fontFamily
-        font.pixelSize: Style.font.caption
-      }
-    }
-
-    // Refresh pulse: while fetches are in flight the badge reads as a dot so
+    // Refresh pulse: while fetches are in flight the dot reads as activity so
     // a long offline stretch does not look like a hung widget.
     Rectangle {
       visible: root.svcRefreshing && root.unreadCount === 0
