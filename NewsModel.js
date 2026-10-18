@@ -213,7 +213,13 @@ function normalizeSeen(raw) {
 
 function trimSeen(read, limit) {
   var entries = []
-  for (var key in read) entries.push([key, read[key]])
+  for (var key in read) {
+    // Only flat id→timestamps survive; anything that leaked in wrapped
+    // (values that are numbers) is dropped instead of growing nesting.
+    var ts = Number(read[key])
+    if (!isFinite(ts) || key === "version" || key === "read") continue
+    entries.push([key, ts])
+  }
   entries.sort(function (a, b) { return b[1] - a[1] })
   var out = {}
   for (var i = 0; i < Math.min(limit, entries.length); i++) out[entries[i][0]] = entries[i][1]
