@@ -103,15 +103,22 @@ Item {
   }
 
   function applySettings(next) {
+    // Callers hand this a JSON string (IPC arg or widget payload); accept a
+    // plain object too. A string would make every `x !== false` guard read
+    // undefined !== false and silently flip toggles on.
+    var obj = next
+    if (typeof obj === "string") {
+      try { obj = JSON.parse(obj) } catch (e) { obj = null }
+    }
     var clean = {
-      pollMinutes: NewsModel.coerceInt(next && next.pollMinutes, 20, 5, 240),
-      filterCanary: next ? next.filterCanary !== false : true,
-      maxItems: NewsModel.coerceInt(next && next.maxItems, 80, 20, 200),
-      sourceOmarchy: next ? next.sourceOmarchy !== false : true,
-      sourceOpencode: next ? next.sourceOpencode !== false : true,
-      sourceHermes: next ? next.sourceHermes !== false : true,
-      sourceMarketplace: next ? next.sourceMarketplace !== false : false,
-      sourceSite: next ? next.sourceSite !== false : true,
+      pollMinutes: NewsModel.coerceInt(obj && obj.pollMinutes, 20, 5, 240),
+      filterCanary: obj ? obj.filterCanary !== false : true,
+      maxItems: NewsModel.coerceInt(obj && obj.maxItems, 80, 20, 200),
+      sourceOmarchy: obj ? obj.sourceOmarchy !== false : true,
+      sourceOpencode: obj ? obj.sourceOpencode !== false : true,
+      sourceHermes: obj ? obj.sourceHermes !== false : true,
+      sourceMarketplace: obj ? obj.sourceMarketplace !== false : false,
+      sourceSite: obj ? obj.sourceSite !== false : true,
     }
     var sourcesChanged = NewsModel.sourcesFromSettings(clean).join(",")
       !== NewsModel.sourcesFromSettings(root.settings).join(",")
