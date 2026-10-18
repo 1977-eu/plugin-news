@@ -87,27 +87,7 @@ Panel {
     root.cursorIndex = 0
   }
 
-  onOpenedChanged: {
-    if (opened) {
-      resetCursor()
-      logProbe.restart()
-    }
-  }
-  // TEMP diagnostic probe (remove before release)
-  Timer {
-    id: logProbe
-    interval: 60
-    repeat: true
-    property int n: 0
-    onTriggered: {
-      console.log("[1977.news-probe]", n, "listColH=" + listColumn.implicitHeight,
-        "rowsColH=" + (typeof rowsColumn !== "undefined" ? rowsColumn.implicitHeight : "?"),
-        "items=" + root.items.length,
-        "contentW=" + panel.contentWidth, "contentH=" + panel.contentHeight,
-        "cardH=" + (listColumn.implicitHeight + panel.verticalContentInset))
-      if (++n > 8) stop()
-    }
-  }
+  onOpenedChanged: if (opened) resetCursor()
   onItemsChanged: {
     if (root.cursorIndex >= root.items.length)
       root.cursorIndex = Math.max(0, root.items.length - 1)
@@ -143,7 +123,10 @@ Panel {
 
     Column {
       id: listColumn
-      width: panel.listWidth
+      // Fit the card's interior: contentHolder is already inset by the
+      // border/padding, so sizing to parent.width keeps chips inside the
+      // card instead of escaping through the right edge.
+      width: parent.width
       spacing: Style.space(4)
 
       // ---- header: title, status, actions
