@@ -248,12 +248,13 @@ Item {
     property string lastError: ""
     // per source: idle | loading | ok | bad | err
     property var sourceStatus: ({
-      omarchy: "idle", opencode: "idle", hermes: "idle", marketplace: "idle",
+      omarchy: "idle", opencode: "idle", hermes: "idle", marketplace: "idle", site: "idle",
     })
     property var rawBySource: ({})
 
     function collect(sourceId, raw) {
-      var hasEntries = raw.indexOf("<entry>") >= 0
+      // Atom stores items in <entry>, RSS 2.0 in <item>; both are ours now.
+      var hasEntries = raw.indexOf("<entry>") >= 0 || raw.indexOf("<item>") >= 0
       if (hasEntries) rawBySource[sourceId] = raw.slice(0, 262144)
       setSourceStatus(sourceId, hasEntries ? "ok" : "err")
       reapply()
