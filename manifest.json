@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "1977.news",
+  "name": "Omarchy Ecosystem News",
+  "version": "0.1.0",
+  "author": "gnl",
+  "license": "MIT",
+  "description": "Releases e novidades do ecossistema: Omarchy, OpenCode, Hermes e novos plugins do marketplace",
+  "kinds": [
+    "bar-widget",
+    "service"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml",
+    "service": "Service.qml"
+  },
+  "barWidget": {
+    "displayName": "Omarchy Ecosystem News",
+    "description": "Releases e novos plugins dos projetos Omarchy, OpenCode e Hermes",
+    "category": "Other",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "pollMinutes": 20,
+      "filterCanary": true,
+      "maxItems": 80,
+      "sourceOmarchy": true,
+      "sourceOpencode": true,
+      "sourceHermes": true,
+      "sourceMarketplace": true
+    },
+    "schema": [
+      { "key": "pollMinutes", "type": "integer", "label": "Polling (minutes)", "min": 5, "max": 240, "step": 5, "defaultValue": 20 },
+      { "key": "filterCanary", "type": "boolean", "label": "Hide Hermes canary releases", "defaultValue": true },
+      { "key": "maxItems", "type": "integer", "label": "Kept items", "min": 20, "max": 200, "step": 10, "defaultValue": 80 },
+      { "key": "sourceOmarchy", "type": "boolean", "label": "Omarchy releases", "defaultValue": true },
+      { "key": "sourceOpencode", "type": "boolean", "label": "OpenCode releases", "defaultValue": true },
+      { "key": "sourceHermes", "type": "boolean", "label": "Hermes Agent releases", "defaultValue": true },
+      { "key": "sourceMarketplace", "type": "boolean", "label": "New marketplace plugins", "defaultValue": true }
+    ]
+  }
+}

@@ -1,0 +1,315 @@
+import QtQuick
+import Quickshell
+import qs.Commons
+import qs.Commons as Commons
+import qs.Ui
+import "NewsModel.js" as NewsModel
+
+// The news list popout for 1977.news. The badge lives on the widget; this
+// panel owns reading: the list, keyboard cursor, open-in-browser and
+// mark-read. Everything displayed comes from the feeds and is bounded by
+// NewsModel at parse time, so every sink stays plain text.
+
+Panel {
+  id: root
+  moduleName: "1977.news"
+  ipcTarget: "1977.news"
+  manageIpc: false
+
+  property var anchorItem: null
+  property var hostWidget: null
+  readonly property var barIdentity: hostWidget || root
+
+  // Resolved at the widget: the badge holds the live service and hands it
+  // down. A service-less replacement bar leaves the list empty with a
+  // friendly note rather than a hostile blank surface.
+  readonly property var svc: hostWidget ? (hostWidget.svc || null) : null
+  readonly property var items: svc ? svc.items : []
+  readonly property bool refreshing: svc ? svc.refreshing : false
+  readonly property bool stale: svc ? svc.stale : false
+  readonly property string errorText: svc ? svc.lastError : ""
+
+  readonly property color foreground: bar ? bar.foreground : Commons.Color.foreground
+  readonly property color dim: Qt.darker(foreground, 1.55)
+  readonly property color urgent: bar ? bar.urgent : Commons.Color.accent
+
+  property int cursorIndex: 0
+  readonly property bool deadList: !items || items.length === 0
+  readonly property var cursorItem: deadList ? null : items[cursorIndex]
+
+  readonly property var sourceLabels: ({
+    omarchy: "OM", opencode: "OC", hermes: "HE", marketplace: "MP",
+  })
+
+  function refreshNow() {
+    if (svc && typeof svc.refresh === "function") svc.refresh()
+  }
+
+  function markAll() {
+    if (svc && typeof svc.markAllRead === "function") svc.markAllRead()
+  }
+
+  function markRead(item) {
+    if (!item || !svc || typeof svc.markRead !== "function") return
+    svc.markRead([String(item.id)])
+  }
+
+  // Only our four source hosts' page URLs ever open; NewsModel.safeLink is
+  // the allowlist, and it returns "" for anything else.
+  function openStory(item) {
+    if (!item) return
+    markRead(item)
+    var link = NewsModel.safeLink(item)
+    if (link === "") return
+    Quickshell.execDetached(["xdg-open", link])
+  }
+
+  function relativeAge(ms) {
+    if (!ms) return ""
+    var sec = Math.max(0, (Date.now() - ms) / 1000)
+    if (sec < 60) return "now"
+    if (sec < 3600) return Math.floor(sec / 60) + "m"
+    if (sec < 86400) return Math.floor(sec / 3600) + "h"
+    return Math.floor(sec / 86400) + "d"
+  }
+
+  function moveCursorStep(delta) {
+    if (root.deadList) return
+    root.cursorIndex = Math.max(0, Math.min(root.items.length - 1, root.cursorIndex + delta))
+  }
+
+  function resetCursor() {
+    root.cursorIndex = 0
+  }
+
+  onOpenedChanged: if (opened) resetCursor()
+  onItemsChanged: {
+    if (root.cursorIndex >= root.items.length)
+      root.cursorIndex = Math.max(0, root.items.length - 1)
+  }
+
+  KeyboardPanel {
+    id: panel
+    anchorItem: root.anchorItem
+    owner: root.barIdentity
+    bar: root.bar
+    open: root.opened
+    centerOnBar: false
+    focusTarget: keyCatcher
+    contentWidth: panel.fittedContentWidth(root.listWidth)
+    contentHeight: panel.fittedContentHeight(listColumn.implicitHeight, Style.space(520))
+
+    PanelKeyCatcher {
+      id: keyCatcher
+      anchors.fill: parent
+      onCloseRequested: root.close()
+      onMoveRequested: function(dx, dy) {
+        if (dy !== 0) root.moveCursorStep(dy)
+      }
+      onActivateRequested: root.openStory(root.cursorItem)
+      // x marks the story under the cursor read without opening it.
+      onDeleteRequested: root.markRead(root.cursorItem)
+      onTextKey: function(t) {
+        if (t === "r" || t === "R") root.refreshNow()
+        else if (t === "m" || t === "M") root.markAll()
+      }
+    }
+
+    readonly property real listWidth: Style.space(430)
+
+    Column {
+      id: listColumn
+      width: panel.listWidth
+      spacing: Style.space(4)
+
+      // ---- header: title, status, actions
+      Item {
+        width: parent.width
+        height: Style.space(22)
+
+        Text {
+          textFormat: Text.PlainText
+          anchors.left: parent.left
+          anchors.verticalCenter: parent.verticalCenter
+          text: "Ecosystem news"
+          color: root.foreground
+          font.family: bar ? bar.fontFamily : Style.font.family
+          font.pixelSize: Style.font.heading
+        }
+
+        Text {
+          textFormat: Text.PlainText
+          anchors.right: refreshButton.left
+          anchors.rightMargin: Style.space(8)
+          anchors.verticalCenter: parent.verticalCenter
+          text: root.refreshing ? "checking..." : (root.stale ? "stale" : "")
+          color: root.dim
+          font.family: bar ? bar.fontFamily : Style.font.family
+          font.pixelSize: Style.font.caption
+        }
+
+        PanelActionButton {
+          id: refreshButton
+          iconText: root.refreshing ? "…" : "↻"
+          tooltipText: "Refresh now (R)"
+          visible: !root.refreshing || true
+          foreground: root.foreground
+          hasCursor: true
+          anchors.right: markAllButton.left
+          anchors.rightMargin: Style.space(2)
+          anchors.verticalCenter: parent.verticalCenter
+          onClicked: root.refreshNow()
+        }
+
+        PanelActionButton {
+          id: markAllButton
+          iconText: "✓"
+          tooltipText: "Mark all read (M)"
+          foreground: root.foreground
+          hasCursor: true
+          anchors.right: parent.right
+          anchors.verticalCenter: parent.verticalCenter
+          onClicked: root.markAll()
+        }
+      }
+
+      // ---- bounded error line (already capped at parse/merge time)
+      Text {
+        textFormat: Text.PlainText
+        visible: root.errorText !== ""
+        width: parent.width
+        text: root.errorText
+        color: root.urgent
+        font.family: bar ? bar.fontFamily : Style.font.family
+        font.pixelSize: Style.font.caption
+        elide: Text.ElideRight
+      }
+
+      Text {
+        textFormat: Text.PlainText
+        visible: root.items.length === 0
+        width: parent.width
+        text: root.refreshing
+          ? "Fetching feeds..."
+          : (root.svc ? "No ecosystem news." : "News service not available on this bar.")
+        color: root.dim
+        font.family: bar ? bar.fontFamily : Style.font.family
+        font.pixelSize: Style.font.body
+      }
+
+      Flickable {
+        id: listScroll
+        width: parent.width
+        height: Math.min(listColumn.rowsHeight, Style.space(420))
+        contentWidth: width
+        contentHeight: listColumn.rowsHeight
+        clip: true
+        interactive: contentHeight > height
+        boundsBehavior: Flickable.StopAtBounds
+
+        Column {
+          id: listColumn
+          width: listScroll.width
+          spacing: Style.space(2)
+
+          Repeater {
+            model: root.items
+
+            delegate: Item {
+              id: row
+              required property var modelData
+              required property int index
+              readonly property bool isCurrent: root.cursorIndex === index
+              readonly property bool isRead:
+                !!(root.svc && root.svc.readModel && root.svc.readModel[String(modelData.id)])
+
+              width: parent ? parent.width : 0
+              height: Style.space(32)
+
+              CursorSurface {
+                anchors.fill: parent
+                foreground: root.foreground
+                current: row.isCurrent
+              }
+
+              Rectangle {
+                // Unread dot.
+                visible: !row.isRead
+                anchors.left: parent.left
+                anchors.leftMargin: Style.space(3)
+                anchors.verticalCenter: parent.verticalCenter
+                width: Style.space(4)
+                height: width
+                radius: width / 2
+                color: root.urgent
+              }
+
+              Text {
+                textFormat: Text.PlainText
+                anchors.left: parent.left
+                anchors.leftMargin: Style.space(12)
+                anchors.right: rowMeta.left
+                anchors.rightMargin: Style.space(8)
+                anchors.verticalCenter: parent.verticalCenter
+                text: String(modelData.title || "")
+                color: row.isRead ? root.dim : root.foreground
+                font.family: bar ? bar.fontFamily : Style.font.family
+                font.pixelSize: Style.font.body
+                elide: Text.ElideRight
+              }
+
+              Item {
+                id: rowMeta
+                anchors.right: parent.right
+                anchors.rightMargin: Style.space(6)
+                anchors.verticalCenter: parent.verticalCenter
+                width: chipText.implicitWidth + ageText.implicitWidth + Style.space(16)
+                height: row.height
+
+                Text {
+                  id: chipText
+                  anchors.left: parent.left
+                  anchors.verticalCenter: parent.verticalCenter
+                  textFormat: Text.PlainText
+                  text: root.sourceLabels[String(modelData.source)] || "?"
+                  color: root.dim
+                  font.family: bar ? bar.fontFamily : Style.font.family
+                  font.pixelSize: Style.font.caption
+                }
+
+                Text {
+                  id: ageText
+                  anchors.left: chipText.right
+                  anchors.leftMargin: Style.space(8)
+                  anchors.verticalCenter: parent.verticalCenter
+                  textFormat: Text.PlainText
+                  text: root.relativeAge(modelData.updatedMs || 0)
+                  color: root.dim
+                  font.family: bar ? bar.fontFamily : Style.font.family
+                  font.pixelSize: Style.font.caption
+                }
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                onClicked: function(mouse) { root.openStory(row.modelData) }
+                onEntered: root.cursorIndex = row.index
+              }
+            }
+          }
+        }
+      }
+
+      // ---- footer hint
+      Text {
+        textFormat: Text.PlainText
+        width: parent.width
+        text: "↑/↓ browse · ↵ open · x mark read · R refresh · Esc close"
+        color: root.dim
+        font.family: bar ? bar.fontFamily : Style.font.family
+        font.pixelSize: Style.font.caption
+        opacity: 0.75
+      }
+    }
+  }
+}
