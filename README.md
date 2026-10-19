@@ -2,64 +2,66 @@
 
 [![Built for Omarchy: Plugin](https://raw.githubusercontent.com/tcballard/omarchy-badges/75975e5b5bf75e7ede3764bcd2950046f7abfe2c/badges/v1/omarchy-plugin.svg)](https://github.com/tcballard/omarchy-badges)
 
-Notícias oficiais do omarchy.org (RSS), com badge de não-lidos e popup de
-leitura; releases de Omarchy, OpenCode e Hermes e commits de novos plugins
-do marketplace ficam disponíveis como fontes opcionais em settings.
+Official omarchy.org news (RSS) with an unread badge and a reading popout;
+Omarchy, OpenCode and Hermes releases and new-plugin marketplace commits
+remain available as optional sources in settings.
 
 Kinds: bar-widget, service
 
-## O que mostra
+## What it shows
 
-| Fonte | Feed | Padrão | Exemplo |
+| Source | Feed | Default | Example |
 |---|---|---|---|
-| Omarchy.org | `https://omarchy.org/news/rss.xml` (RSS 2.0, fonte oficial) | **on** | "Greptile joins as a Distinguished Corporate Patron" |
-| OpenCode | releases do `anomalyco/opencode` | **on** | `v2.0.32` |
-| Hermes | releases do `NousResearch/Hermes-Agent` | **on** | releases estáveis (canary oculto por padrão) |
-| Omarchy | releases do `omacom/omarchy` | off | `v4.0.5` |
-| Marketplace | commits no `registry.json` do `omarchy-plugin-marketplace` | off | "New plugin: Luddite Scout" |
+| Omarchy.org | `https://omarchy.org/news/rss.xml` (RSS 2.0, official source) | **on** | "Greptile joins as a Distinguished Corporate Patron" |
+| OpenCode | releases from `anomalyco/opencode` | **on** | `v2.0.32` |
+| Hermes | releases from `NousResearch/Hermes-Agent` | **on** | stable releases (canary hidden by default) |
+| Omarchy | releases from `omacom/omarchy` | off | `v4.0.5` |
+| Marketplace | commits on `registry.json` of `omarchy-plugin-marketplace` | off | "New plugin: Luddite Scout" |
 
-Por padrão a lista mostra **as notícias oficiais do omarchy.org + releases de
-OpenCode e Hermes**. Omarchy releases e o feed de commits do marketplace
-continuam disponíveis via toggles (`sourceOmarchy`, `sourceMarketplace`) em
-settings. O painel agrupa por projeto: news oficiais e releases do Omarchy
-caem no mesmo grupo "OMARCHY"; OpenCode e Hermes têm grupos próprios.
+By default the list shows **official omarchy.org news + OpenCode and Hermes
+releases**. Omarchy releases and the marketplace commit feed stay available
+through toggles (`sourceOmarchy`, `sourceMarketplace`) in settings. The
+panel groups by project: official news and Omarchy releases both land in
+the "OMARCHY" group; OpenCode and Hermes get their own groups, ordered by
+recency — the group with the freshest item opens the list.
 
-Os IDs canônicos dos repositórios mudaram de dono (`basecamp/omarchy` →
-`omacom/omarchy`, `sst/opencode` → `anomalyco/opencode`); o plugin fixa as
-URLs novas diretamente.
+The canonical repository IDs changed owners (`basecamp/omarchy` →
+`omacom/omarchy`, `sst/opencode` → `anomalyco/opencode`); the plugin pins
+the new URLs directly.
 
-## Uso
+## Usage
 
-- **Clique esquerdo** no badge: abre a lista de novidades (↑/↓ navegando,
-  ↵ abre no navegador, x marca lido, R atualiza, Esc fecha).
-- **Clique direito**: força uma atualização dos feeds.
-- Enquanto houver não-lidos, um chip com a contagem aparece no badge.
-- Todo texto exibido é `Text.PlainText` com dados limitados no parse; os
-  links abertos são apenas os dos quatro feeds (allowlist em `NewsModel.js`).
+- **Left click** on the badge: opens the news list (↑/↓ browse, ↵ opens in
+  the browser, x marks read, R refreshes, Esc closes).
+- **Right click**: forces a feed refresh.
+- While there are unread items, a count chip appears on the badge.
+- Everything displayed is `Text.PlainText` with data bounded at parse time;
+  the only links that ever open are the four feeds' own pages (allowlist in
+  `NewsModel.js`).
 
-## Estado
+## State
 
-- Polling e seen-state vivem no serviço singleton (`service`); o widget é
-  uma por monitor.
-- "Lido" persiste em `~/.local/state/1977-news/state.json` (XDG state,
-  externo ao plugin) e sobrevive a reinícios do shell.
-- Configuração no `shell.json` inline na entrada: `pollMinutes` (5–240,
-  padrão 20), `filterCanary` (padrão true), `maxItems` (20–200, padrão 80)
-  e toggles por fonte (`sourceSite` — feed oficial de notícias do
-  omarchy.org, ligado por padrão; `sourceMarketplace` — commits de novos
-  plugins, off por padrão; `sourceOmarchy`/`sourceOpencode`/`sourceHermes`).
+- Polling and seen-state live in the singleton `service`; the widget is a
+  per-monitor view.
+- "Read" persists to `~/.local/state/1977-news/state.json` (XDG state,
+  outside the plugin) and survives shell restarts.
+- Settings are inline on the widget entry in `shell.json`: `pollMinutes`
+  (5–240, default 20), `filterCanary` (default true), `maxItems`
+  (20–200, default 80) and per-source toggles (`sourceSite` — the official
+  omarchy.org news feed, on by default; `sourceMarketplace` — new-plugin
+  commits, off by default; `sourceOmarchy`/`sourceOpencode`/`sourceHermes`).
 
-## Requisitos
+## Requirements
 
-- Omarchy 4 com suporte a plugins Quattro.
-- Somente `curl` (já presente no Omarchy); sem autenticação nem setup
-  privilegiado. Só requisições GET anônimas aos feeds acima, com limite
-  de 15 s e 1 MiB por fonte.
+- Omarchy 4 with Quattro plugin support.
+- Only `curl` (already present in Omarchy); no authentication or privileged
+  setup. Anonymous GET requests to the feeds above only, capped at 15 s and
+  1 MiB per source.
 
 ## Installation
 
 ```bash
-omarchy plugin add https://github.com/OWNER/REPOSITORY.git --enable
+omarchy plugin add https://github.com/1977-eu/plugin-news.git --enable
 ```
 
 For a local checkout:
@@ -87,8 +89,8 @@ omarchy plugin update 1977.news
 omarchy plugin remove 1977.news
 ```
 
-Remover não limpa o arquivo de estado `~/.local/state/1977-news/` — remova a
-pasta manualmente se quiser zerar os não-lidos.
+Removal does not clean the state file `~/.local/state/1977-news/` — delete
+the folder manually if you want a fresh unread state.
 
 ## Security
 
